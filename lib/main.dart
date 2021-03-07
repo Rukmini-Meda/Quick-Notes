@@ -1,7 +1,11 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:notes_app/screens/auth_screen.dart';
 import 'package:notes_app/widgets/notes_card.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(MyApp());
 }
 
@@ -27,7 +31,18 @@ class MyApp extends StatelessWidget {
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'Notes App'),
+      home:  StreamBuilder(
+          stream: FirebaseAuth.instance.authStateChanges(),
+          builder: (ctx, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting)
+              return Center(child: CircularProgressIndicator());
+            if (snapshot.hasData) {
+              return MyHomePage(title: "Notes App",);
+            } else {
+              return AuthScreen();
+            }
+          }),
+
     );
   }
 }
@@ -54,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
   
   @override
   Widget build(BuildContext context) {
-  
+    String title = "Title", category = "Category";
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -62,7 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Container(
         child: ListView(
           children: <Widget>[
-              NotesCard(),
+              NotesCard(title: title,category: category,),
           ]
         )
       ),
